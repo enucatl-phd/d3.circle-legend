@@ -2,52 +2,50 @@ class d3.chart.LineLegend extends d3.chart.BaseChart
 
     constructor: ->
         @accessors = {} unless @accessors?
-        @accessors.color_value = (d) -> d.name
         @accessors.color_scale = d3.scale.category20()
         super
 
     _draw: (element, data, i) ->
                  
+        width = $(element)[0].getBBox().width
         # convenience accessors
-        width = @width()
-        height = @height()
-        margin = @margin()
-        color_value = @color_value()
         color_scale = @color_scale()
 
-        # get unique color names
-        color_names = (data.map color_value).filter (d, i, self) ->
-            self.indexOf d == i
-
-        color_scale.domain color_names
+        font_size = $(element).css('font-size')
+        legend_element_height = Math.floor(parseInt(font_size.replace('px','')) * 1.5)
+        legend_line_width = 0.05 * width
 
         legend_group = d3.select element
             .selectAll ".legends"
             .data [color_scale.domain()]
-            .enter()
 
-        legend_group.append "g"
+        legend_group
+            .enter()
+            .append "g"
             .classed "legends", true
             
         legend_group.exit().remove()
 
         legends = legend_group.selectAll ".legend"
             .data (d) -> d
-            .enter()
+
+        legends.enter()
+            .append "g"
+            .classed "legend", true
 
         legends.each (d) ->
             lines = d3.select this
                 .selectAll "line"
                 .data [d]
-                .enter()
 
             lines
+                .enter()
                 .append "line"
-                .classed "line", true
-                .attr "x1", width - 100
-                .attr "x2", width - 50
-                .attr "y1", 0.1 * height
-                .attr "y2", 0.1 * height
+                .classed "legend", true
+                .attr "x1", width - legend_line_width
+                .attr "x2", width
+                .attr "y1", 0.5 * legend_element_height
+                .attr "y2", 0.5 * legend_element_height
                 .attr "stroke", color_scale
 
             lines.exit().remove()
@@ -55,19 +53,19 @@ class d3.chart.LineLegend extends d3.chart.BaseChart
             texts = d3.select this
                 .selectAll "text"
                 .data [d]
-                .enter()
 
-            texts.append "text"
-                .attr "x", width
-                .attr "y", 0.1 * height
-                .attr "dy", 0.05 * height
+            texts
+                .enter()
+                .append "text"
+                .attr "x", width - 1.2 * legend_line_width
+                .attr "y", 0.5 * legend_element_height
+                .attr "dy", 0.25 * legend_element_height
                 .style "text-anchor", "end"
                 .text (d) -> d
 
             texts.exit().remove()
 
-
         legends.attr "transform", (d, i) ->
-            "translate(0, #{(0.1 * height) * i})"
+            "translate(0, #{legend_element_height * i})"
 
         legends.exit().remove()
