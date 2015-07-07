@@ -1,4 +1,4 @@
-d3.line
+d3.line-legend
 ==========
 
 Add a legend to a line plot
